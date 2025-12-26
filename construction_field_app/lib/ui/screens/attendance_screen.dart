@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:geolocator/geolocator.dart';
-
 import '../../data/local/app_database.dart';
+import '../../services/attendance_service.dart';
+import '../../repositories/attendance_repository.dart';
+
 
 class AttendanceScreen extends StatefulWidget {
   const AttendanceScreen({super.key});
@@ -11,160 +12,84 @@ class AttendanceScreen extends StatefulWidget {
 }
 
 class _AttendanceScreenState extends State<AttendanceScreen> {
-  final AppDatabase db = AppDatabase();
+  late AppDatabase db;
+  late AttendanceService service;
 
   bool isLoading = false;
   String statusMessage = 'No attendance marked yet';
 
-  /* ---------------- SET SITE LOCATION ---------------- */
+  @override
+  void initState() {
+    super.initState();
+    db = AppDatabase();
+    final repo = AttendanceRepository(db);
+    service = AttendanceService(repo);
 
-  Future<void> setSiteLocation() async {
+  }
+
+  /* -------- UI ACTIONS ONLY -------- */
+
+  Future<void> handleSetSiteLocation() async {
     try {
-      LocationPermission permission = await Geolocator.checkPermission();
-      if (permission == LocationPermission.denied) {
-        permission = await Geolocator.requestPermission();
-      }
-
-      if (permission == LocationPermission.denied ||
-          permission == LocationPermission.deniedForever) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Location permission denied')),
-        );
-        return;
-      }
-
-      final position = await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.high,
-      );
-
-      await db.saveSiteGeofence(
-        position.latitude,
-        position.longitude,
-        150,
-      );
-
+      await service.setSiteLocation();
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Site location set successfully'),
           backgroundColor: Colors.green,
         ),
       );
-
       setState(() {});
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error setting site location: $e')),
+        SnackBar(content: Text(e.toString())),
       );
     }
   }
 
-  /* ---------------- MARK ATTENDANCE ---------------- */
-
-  Future<void> markAttendance() async {
+  Future<void> handleMarkAttendance() async {
     setState(() {
       isLoading = true;
       statusMessage = 'Processing attendance...';
     });
 
-    try {
-      LocationPermission permission = await Geolocator.checkPermission();
-      if (permission == LocationPermission.denied) {
-        permission = await Geolocator.requestPermission();
-      }
+    final result = await service.markAttendance();
 
-      if (permission == LocationPermission.denied ||
-          permission == LocationPermission.deniedForever) {
-        setState(() {
-          isLoading = false;
-          statusMessage = 'Location permission denied';
-        });
-        return;
-      }
+    setState(() {
+      isLoading = false;
+      statusMessage = result;
+    });
 
-      final position = await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.high,
-      );
-
-      final site = await db.getSiteGeofence();
-
-      if (site == null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Site location not set'),
-            backgroundColor: Colors.red,
-          ),
-        );
-        setState(() => isLoading = false);
-        return;
-      }
-
-      final distance = Geolocator.distanceBetween(
-        site.latitude,
-        site.longitude,
-        position.latitude,
-        position.longitude,
-      );
-
-      if (distance > site.radius) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              'Outside site boundary (${distance.toStringAsFixed(0)} m)',
-            ),
-            backgroundColor: Colors.red,
-          ),
-        );
-        setState(() => isLoading = false);
-        return;
-      }
-
-      await db.insertAttendance(
-        DateTime.now(),
-        position.latitude,
-        position.longitude,
-      );
-
-      setState(() {
-        isLoading = false;
-        statusMessage = 'Attendance saved offline';
-      });
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Attendance marked successfully'),
-          backgroundColor: Colors.green,
-        ),
-      );
-    } catch (e) {
-      setState(() => isLoading = false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error marking attendance: $e')),
-      );
-    }
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(result),
+        backgroundColor:
+            result.contains('saved') ? Colors.green : Colors.red,
+      ),
+    );
   }
 
-  /* ---------------- UI ---------------- */
+  /* -------- UI -------- */
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white, // ✅ White background
+      backgroundColor: Colors.white,
 
       appBar: AppBar(
         title: const Text(
           'Attendance',
           style: TextStyle(color: Colors.white),
         ),
-        backgroundColor: Colors.grey[800], // ✅ Grey top bar
+        backgroundColor: Colors.grey[800],
       ),
 
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
           ElevatedButton(
-            onPressed: setSiteLocation,
+            onPressed: handleSetSiteLocation,
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.lightBlue, // ✅ Light blue button
+              backgroundColor: Colors.lightBlue,
               minimumSize: const Size(double.infinity, 50),
             ),
             child: const Text('Set Site Location'),
@@ -173,9 +98,9 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
           const SizedBox(height: 16),
 
           ElevatedButton(
-            onPressed: isLoading ? null : markAttendance,
+            onPressed: isLoading ? null : handleMarkAttendance,
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.lightBlue, // ✅ Light blue button
+              backgroundColor: Colors.lightBlue,
               minimumSize: const Size(double.infinity, 50),
             ),
             child: isLoading
@@ -191,7 +116,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
           ),
 
           const SizedBox(height: 24),
-          const Divider(color: Colors.black26),
+          const Divider(),
           const SizedBox(height: 12),
 
           const Text(
@@ -199,7 +124,6 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,
-              color: Colors.black,
             ),
           ),
 
@@ -208,13 +132,6 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
           FutureBuilder(
             future: db.getSiteGeofence(),
             builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                return const Text(
-                  'Loading site info...',
-                  style: TextStyle(color: Colors.black54),
-                );
-              }
-
               if (!snapshot.hasData || snapshot.data == null) {
                 return const Text(
                   'Site not configured yet',
@@ -223,7 +140,6 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
               }
 
               final site = snapshot.data!;
-
               return Text(
                 'Latitude: ${site.latitude.toStringAsFixed(5)}\n'
                 'Longitude: ${site.longitude.toStringAsFixed(5)}\n'

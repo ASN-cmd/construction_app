@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:geolocator/geolocator.dart';
 
 import '../../data/local/app_database.dart';
+import '../../services/records_service.dart';
+import '../../repositories/records_repository.dart';
+
+
 
 class RecordsScreen extends StatefulWidget {
   const RecordsScreen({super.key});
@@ -12,11 +15,14 @@ class RecordsScreen extends StatefulWidget {
 
 class _RecordsScreenState extends State<RecordsScreen> {
   late AppDatabase db;
+  late RecordsService service;
 
   @override
   void initState() {
     super.initState();
     db = AppDatabase();
+    final repo = RecordsRepository(db);
+    service = RecordsService(repo);
   }
 
   @override
@@ -32,8 +38,8 @@ class _RecordsScreenState extends State<RecordsScreen> {
         backgroundColor: Colors.grey[800],
       ),
 
-      body: FutureBuilder<List<AttendanceTableData>>(
-        future: db.getAllAttendance(),
+      body: FutureBuilder<List<AttendanceRecordWithDistance>>(
+        future: service.getRecordsWithDistance(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
@@ -50,61 +56,46 @@ class _RecordsScreenState extends State<RecordsScreen> {
 
           final records = snapshot.data!;
 
-          return FutureBuilder(
-            future: db.getSiteGeofence(),
-            builder: (context, siteSnapshot) {
-              final site = siteSnapshot.data;
+          return ListView.builder(
+            itemCount: records.length,
+            itemBuilder: (context, index) {
+              final item = records[index];
+              final record = item.record;
+              final distance = item.distanceFromSite;
 
-              return ListView.builder(
-                itemCount: records.length,
-                itemBuilder: (context, index) {
-                  final record = records[index];
-
-                  double? distance;
-                  if (site != null) {
-                    distance = Geolocator.distanceBetween(
-                      site.latitude,
-                      site.longitude,
-                      record.latitude,
-                      record.longitude,
-                    );
-                  }
-
-                  return Card(
-                    color: Colors.grey[100],
-                    elevation: 2,
-                    margin: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 6,
+              return Card(
+                color: Colors.grey[100],
+                elevation: 2,
+                margin: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 6,
+                ),
+                child: ListTile(
+                  title: Text(
+                    'Attendance ${index + 1}',
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black,
                     ),
-                    child: ListTile(
-                      title: Text(
-                        'Attendance ${index + 1}',
-                        style: const TextStyle(
-                          color: Colors.black,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      subtitle: Text(
-                        'Time: ${record.timestamp}\n'
-                        'Lat: ${record.latitude.toStringAsFixed(5)}\n'
-                        'Lng: ${record.longitude.toStringAsFixed(5)}'
-                        '${distance != null ? '\nDistance from site: ${distance.toStringAsFixed(0)} m' : ''}',
-                        style: const TextStyle(color: Colors.black87),
-                      ),
-                      trailing: site != null
-                          ? Icon(
-                              distance != null && distance <= site.radius
-                                  ? Icons.check_circle
-                                  : Icons.warning,
-                              color: distance != null && distance <= site.radius
-                                  ? Colors.green
-                                  : Colors.red,
-                            )
-                          : null,
-                    ),
-                  );
-                },
+                  ),
+                  subtitle: Text(
+                    'Time: ${record.timestamp}\n'
+                    'Lat: ${record.latitude.toStringAsFixed(5)}\n'
+                    'Lng: ${record.longitude.toStringAsFixed(5)}'
+                    '${distance != null ? '\nDistance from site: ${distance.toStringAsFixed(0)} m' : ''}',
+                    style: const TextStyle(color: Colors.black87),
+                  ),
+                  trailing: distance != null
+                      ? Icon(
+                          distance <= 150
+                              ? Icons.check_circle
+                              : Icons.warning,
+                          color: distance <= 150
+                              ? Colors.green
+                              : Colors.red,
+                        )
+                      : null,
+                ),
               );
             },
           );
