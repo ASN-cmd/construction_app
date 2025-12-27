@@ -14,7 +14,8 @@ class ConstructionApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'Construction Field App',
       theme: ThemeData(
-        primarySwatch: Colors.blue,
+        useMaterial3: true,
+        colorSchemeSeed: Colors.blue,
         scaffoldBackgroundColor: Colors.white,
       ),
       home: const AuthGate(), 

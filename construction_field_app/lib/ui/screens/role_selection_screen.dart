@@ -12,41 +12,81 @@ class RoleSelectionScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Select Role'),
-        backgroundColor: Colors.grey,
+        title: const Text('Select Your Role'),
       ),
-      body: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          roleButton(context, service, 'Site Engineer'),
-          roleButton(context, service, 'Supervisor'),
-          roleButton(context, service, 'Manager'),
-        ],
-      ),
-    );
-  }
-
-  Widget roleButton(
-      BuildContext context, AuthService service, String role) {
-    return Padding(
-      padding: const EdgeInsets.all(8),
-      child: ElevatedButton(
-        style: ElevatedButton.styleFrom(
-          minimumSize: const Size(250, 50),
+      body: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          children: [
+            RoleCard(
+              icon: Icons.engineering,
+              title: 'Site Engineer',
+              onTap: () async {
+                await service.saveRole('Site Engineer');
+                Navigator.pushAndRemoveUntil(
+                  context,
+                  MaterialPageRoute(builder: (_) => MainScaffold()),
+                  (_) => false,
+                );
+              },
+            ),
+            RoleCard(
+              icon: Icons.supervisor_account,
+              title: 'Supervisor',
+              onTap: () async {
+                await service.saveRole('Supervisor');
+                Navigator.pushAndRemoveUntil(
+                  context,
+                  MaterialPageRoute(builder: (_) => MainScaffold()),
+                  (_) => false,
+                );
+              },
+            ),
+            RoleCard(
+              icon: Icons.admin_panel_settings,
+              title: 'Manager',
+              onTap: () async {
+                await service.saveRole('Manager');
+                Navigator.pushAndRemoveUntil(
+                  context,
+                  MaterialPageRoute(builder: (_) => MainScaffold()),
+                  (_) => false,
+                );
+              },
+            ),
+          ],
         ),
-        onPressed: () async {
-          await service.saveRole(role);
-
-          Navigator.pushAndRemoveUntil(
-            context,
-            MaterialPageRoute(builder: (_) => MainScaffold()),
-            (route) => false,
-          );
-
-        },
-        child: Text(role),
       ),
     );
   }
 }
 
+class RoleCard extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final VoidCallback onTap;
+
+  const RoleCard({
+    super.key,
+    required this.icon,
+    required this.title,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      elevation: 1,
+      margin: const EdgeInsets.symmetric(vertical: 10),
+      child: ListTile(
+        leading: Icon(icon, size: 32),
+        title: Text(
+          title,
+          style: Theme.of(context).textTheme.titleLarge,
+        ),
+        trailing: const Icon(Icons.arrow_forward_ios),
+        onTap: onTap,
+      ),
+    );
+  }
+}
