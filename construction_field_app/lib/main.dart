@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'ui/screens/main_scaffold.dart';
+import 'ui/screens/auth_gate.dart';
 
 void main() {
   runApp(const ConstructionApp());
@@ -17,7 +17,7 @@ class ConstructionApp extends StatelessWidget {
         primarySwatch: Colors.blue,
         scaffoldBackgroundColor: Colors.white,
       ),
-      home: const MainScaffold(),
+      home: const AuthGate(), 
     );
   }
 }
