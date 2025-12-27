@@ -12,7 +12,7 @@ class OtpScreen extends StatefulWidget {
 }
 
 class _OtpScreenState extends State<OtpScreen> {
-  final controller = TextEditingController();
+  final otpController = TextEditingController();
   late AuthService service;
 
   @override
@@ -26,22 +26,36 @@ class _OtpScreenState extends State<OtpScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Verify OTP'),
-        backgroundColor: Colors.grey[800],
       ),
       body: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(20),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('Enter OTP (use 123456)'),
-            const SizedBox(height: 12),
-            TextField(
-              controller: controller,
-              keyboardType: TextInputType.number,
+            Text(
+              'Enter OTP',
+              style: Theme.of(context).textTheme.headlineMedium,
             ),
-            const SizedBox(height: 16),
-            ElevatedButton(
+            const SizedBox(height: 8),
+            const Text('Use 123456 for demo'),
+
+            const SizedBox(height: 24),
+
+            TextField(
+              controller: otpController,
+              keyboardType: TextInputType.number,
+              decoration: const InputDecoration(
+                labelText: 'OTP',
+                prefixIcon: Icon(Icons.lock),
+                border: OutlineInputBorder(),
+              ),
+            ),
+
+            const SizedBox(height: 24),
+
+            FilledButton(
               onPressed: () async {
-                final ok = await service.verifyOtp(controller.text);
+                final ok = await service.verifyOtp(otpController.text);
                 if (!ok) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text('Invalid OTP')),
@@ -58,7 +72,10 @@ class _OtpScreenState extends State<OtpScreen> {
                   ),
                 );
               },
-              child: const Text('Verify'),
+              style: FilledButton.styleFrom(
+                minimumSize: const Size(double.infinity, 50),
+              ),
+              child: const Text('Verify & Continue'),
             ),
           ],
         ),
