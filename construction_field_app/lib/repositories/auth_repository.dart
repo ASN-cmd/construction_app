@@ -26,6 +26,11 @@ class AuthRepository {
     return prefs.getString(_keyRole);
   }
 
+  Future<String?> getPhone() async {
+  final prefs = await SharedPreferences.getInstance();
+  return prefs.getString('phone_number');
+}
+
   Future<void> logout() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.clear();
