@@ -27,5 +27,7 @@ class AuthService {
   Future<void> logout() async {
     await repo.logout();
   }
+
+  Future<String?> getPhone() async => repo.getPhone();
 }
 

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../data/local/app_database.dart';
 import '../../services/records_service.dart';
 import '../../repositories/records_repository.dart';
+import 'profile_screen.dart';
 
 
 
@@ -36,6 +37,22 @@ class _RecordsScreenState extends State<RecordsScreen> {
           style: TextStyle(color: Colors.white),
         ),
         backgroundColor: Colors.grey[800],
+        actions: [
+          IconButton(
+            icon: const CircleAvatar(
+              radius: 16,
+              backgroundColor: Colors.white,
+              child: Icon(Icons.person, color: Colors.black, size: 18),
+            ),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => ProfileScreen()),
+              );
+            },
+          ),
+          const SizedBox(width: 12),
+        ],
       ),
 
       body: FutureBuilder<List<AttendanceRecordWithDistance>>(
