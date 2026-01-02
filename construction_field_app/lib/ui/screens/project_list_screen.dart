@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import '../../models/project.dart';
-import 'project_scaffold.dart';
+import 'project_home_screen.dart'; // Import the new navigation shell
 
 class ProjectListScreen extends StatelessWidget {
   ProjectListScreen({super.key});
 
   final List<Project> projects = [
     Project(
-      name: 'Home',
+      name: 'hone', // Renamed to match your Powerplay screenshot
       startDate: DateTime(2025, 1, 1),
       endDate: DateTime(2025, 6, 30),
       isActive: true,
@@ -18,13 +18,11 @@ class ProjectListScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Projects'),
+        title: const Text('Projects', style: TextStyle(color: Colors.white)),
         backgroundColor: Colors.blue.shade900,
         actions: [
           TextButton.icon(
-            onPressed: () {
-              // future: open create project screen
-            },
+            onPressed: () {},
             icon: const Icon(Icons.add, color: Colors.white),
             label: const Text(
               'Create New',
@@ -40,21 +38,30 @@ class ProjectListScreen extends StatelessWidget {
           final project = projects[index];
 
           return Card(
+            elevation: 2,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(12),
             ),
             child: ListTile(
               onTap: () {
-                Navigator.pushReplacement(
+                // Navigate to the full Navigation Shell
+                Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (_) => ProjectScaffold(
+                    builder: (_) => ProjectHomeScreen(
                       projectName: project.name,
                     ),
                   ),
                 );
               },
-              leading: const Icon(Icons.home_work_outlined),
+              leading: Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: Colors.blue.shade50,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Icon(Icons.home_work_outlined, color: Colors.blue),
+              ),
               title: Text(
                 project.name,
                 style: const TextStyle(fontWeight: FontWeight.bold),
@@ -62,11 +69,7 @@ class ProjectListScreen extends StatelessWidget {
               subtitle: Text(
                 '${_fmt(project.startDate)} - ${_fmt(project.endDate)}',
               ),
-              trailing: Chip(
-                label: Text(project.isActive ? 'Active' : 'Inactive'),
-                backgroundColor:
-                    project.isActive ? Colors.green.shade100 : Colors.grey[300],
-              ),
+              trailing: Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey.shade400),
             ),
           );
         },
@@ -74,6 +77,5 @@ class ProjectListScreen extends StatelessWidget {
     );
   }
 
-  String _fmt(DateTime d) =>
-      '${d.day}/${d.month}/${d.year}';
+  String _fmt(DateTime d) => '${d.day}/${d.month}/${d.year}';
 }
