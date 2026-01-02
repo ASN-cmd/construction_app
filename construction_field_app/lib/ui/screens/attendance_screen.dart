@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import '../../data/local/app_database.dart';
 import '../../services/attendance_service.dart';
 import '../../repositories/attendance_repository.dart';
-import 'profile_screen.dart';
 
 class AttendanceScreen extends StatefulWidget {
   const AttendanceScreen({super.key});
@@ -82,24 +81,6 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
           ),
           child: const Text('Set Site Location'),
         ),
-        backgroundColor: Colors.grey[800],
-        actions: [
-          IconButton(
-            icon: const CircleAvatar(
-              radius: 16,
-              backgroundColor: Colors.white,
-              child: Icon(Icons.person, color: Colors.black, size: 18),
-            ),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => ProfileScreen()),
-              );
-            },
-          ),
-          const SizedBox(width: 12),
-        ],
-      ),
 
         const SizedBox(height: 16),
 
