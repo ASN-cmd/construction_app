@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../data/local/app_database.dart';
 import '../../services/records_service.dart';
 import '../../repositories/records_repository.dart';
+import 'profile_screen.dart';
 
 class RecordsScreen extends StatefulWidget {
   const RecordsScreen({super.key});
@@ -31,14 +32,45 @@ class _RecordsScreenState extends State<RecordsScreen> {
           return const Center(child: CircularProgressIndicator());
         }
 
-        if (!snapshot.hasData || snapshot.data!.isEmpty) {
-          return const Center(
-            child: Text(
-              'No attendance records found',
-              style: TextStyle(color: Colors.black54),
+      appBar: AppBar(
+        title: const Text(
+          'Offline Records',
+          style: TextStyle(color: Colors.white),
+        ),
+        backgroundColor: Colors.grey[800],
+        actions: [
+          IconButton(
+            icon: const CircleAvatar(
+              radius: 16,
+              backgroundColor: Colors.white,
+              child: Icon(Icons.person, color: Colors.black, size: 18),
             ),
-          );
-        }
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => ProfileScreen()),
+              );
+            },
+          ),
+          const SizedBox(width: 12),
+        ],
+      ),
+
+      body: FutureBuilder<List<AttendanceRecordWithDistance>>(
+        future: service.getRecordsWithDistance(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
+
+          if (!snapshot.hasData || snapshot.data!.isEmpty) {
+            return const Center(
+              child: Text(
+                'No attendance records found',
+                style: TextStyle(color: Colors.black54),
+              ),
+            );
+          }
 
         final records = snapshot.data!;
 
