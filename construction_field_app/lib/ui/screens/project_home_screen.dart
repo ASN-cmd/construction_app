@@ -67,7 +67,7 @@ class _ProjectHomeScreenState extends State<ProjectHomeScreen> {
           BottomNavigationBarItem(icon: Icon(Icons.assignment), label: 'Task'),
           BottomNavigationBarItem(icon: Icon(Icons.inventory_2), label: 'Material'),
           BottomNavigationBarItem(icon: Icon(Icons.calendar_today), label: 'Attendance'),
-          BottomNavigationBarItem(icon: Icon(Icons.menu), label: 'More'),
+          BottomNavigationBarItem(icon: Icon(Icons.menu), label: 'Records'),
         ],
       ),
       floatingActionButton: _selectedIndex == 0 
