@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../data/local/app_database.dart';
-import '../../services/records_service.dart';
-import '../../repositories/records_repository.dart';
+import '../../repositories/attendance_repository.dart';
+import '../../models/worker_attendance_record.dart';
 
 class RecordsScreen extends StatefulWidget {
   const RecordsScreen({super.key});
@@ -12,67 +12,62 @@ class RecordsScreen extends StatefulWidget {
 
 class _RecordsScreenState extends State<RecordsScreen> {
   late AppDatabase db;
-  late RecordsService service;
+  late AttendanceRepository repo;
 
   @override
   void initState() {
     super.initState();
     db = AppDatabase();
-    final repo = RecordsRepository(db);
-    service = RecordsService(repo);
+    repo = AttendanceRepository(db);
   }
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<List<AttendanceRecordWithDistance>>(
-      future: service.getRecordsWithDistance(),
+    return FutureBuilder<List<WorkerAttendanceRecord>>(
+      future: repo.getWorkerAttendanceRecords(),
       builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
+        if (!snapshot.hasData) {
           return const Center(child: CircularProgressIndicator());
         }
 
-        if (!snapshot.hasData || snapshot.data!.isEmpty) {
+        final records = snapshot.data!;
+        if (records.isEmpty) {
           return const Center(
-            child: Text(
-              'No attendance records found',
-              style: TextStyle(color: Colors.black54),
-            ),
+            child: Text('No attendance records found'),
           );
         }
-
-        final records = snapshot.data!;
 
         return ListView.builder(
           padding: const EdgeInsets.all(12),
           itemCount: records.length,
           itemBuilder: (context, index) {
-            final item = records[index];
-            final record = item.record;
-            final distance = item.distanceFromSite;
+            final r = records[index];
 
             return Card(
               elevation: 2,
               margin: const EdgeInsets.symmetric(vertical: 6),
               child: ListTile(
                 title: Text(
-                  'Attendance ${index + 1}',
+                  r.workerName,
                   style: const TextStyle(fontWeight: FontWeight.bold),
                 ),
                 subtitle: Text(
-                  'Time: ${record.timestamp}\n'
-                  'Lat: ${record.latitude.toStringAsFixed(5)}\n'
-                  'Lng: ${record.longitude.toStringAsFixed(5)}'
-                  '${distance != null ? '\nDistance from site: ${distance.toStringAsFixed(0)} m' : ''}',
+                  '${r.designation}\n'
+                  '${r.status.toUpperCase()} • '
+                  '${r.date.toLocal().toString().split(' ')[0]}',
                 ),
-                trailing: distance != null
-                    ? Icon(
-                        distance <= 150
-                            ? Icons.check_circle
-                            : Icons.warning,
-                        color:
-                            distance <= 150 ? Colors.green : Colors.red,
-                      )
-                    : null,
+                trailing: Icon(
+                  r.status == 'present'
+                      ? Icons.check_circle
+                      : r.status == 'half_day'
+                          ? Icons.remove_circle
+                          : Icons.cancel,
+                  color: r.status == 'present'
+                      ? Colors.green
+                      : r.status == 'half_day'
+                          ? Colors.orange
+                          : Colors.red,
+                ),
               ),
             );
           },

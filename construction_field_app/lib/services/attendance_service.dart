@@ -1,12 +1,32 @@
 import 'package:geolocator/geolocator.dart';
 import '../repositories/attendance_repository.dart';
+import '../data/local/app_database.dart';
 
 class AttendanceService {
   final AttendanceRepository repo;
 
   AttendanceService(this.repo);
 
-  /* -------- SET SITE -------- */
+  /* ---------------- WORKERS ---------------- */
+
+  Future<void> addWorker({
+    required String name,
+    required String designation,
+    required double dailyWage,
+  }) {
+    return repo.insertWorker(
+      name: name,
+      designation: designation,
+      dailyWage: dailyWage,
+    );
+  }
+
+  Future<List<Worker>> getWorkers() {
+    return repo.getAllWorkers();
+  }
+
+  /* ---------------- SITE ---------------- */
+
   Future<void> setSiteLocation() async {
     LocationPermission permission = await Geolocator.checkPermission();
     if (permission == LocationPermission.denied) {
@@ -29,8 +49,12 @@ class AttendanceService {
     );
   }
 
-  /* -------- MARK ATTENDANCE -------- */
-  Future<String> markAttendance() async {
+  /* ---------------- WORKER ATTENDANCE ---------------- */
+
+  Future<void> markWorkerAttendance({
+    required int workerId,
+    required String status, // present | half_day | absent
+  }) async {
     LocationPermission permission = await Geolocator.checkPermission();
     if (permission == LocationPermission.denied) {
       permission = await Geolocator.requestPermission();
@@ -38,7 +62,7 @@ class AttendanceService {
 
     if (permission == LocationPermission.denied ||
         permission == LocationPermission.deniedForever) {
-      return 'Location permission denied';
+      throw Exception('Location permission denied');
     }
 
     final position = await Geolocator.getCurrentPosition(
@@ -46,7 +70,9 @@ class AttendanceService {
     );
 
     final site = await repo.getSite();
-    if (site == null) return 'Site not configured';
+    if (site == null) {
+      throw Exception('Set site location first');
+    }
 
     final distance = Geolocator.distanceBetween(
       site.latitude,
@@ -56,15 +82,16 @@ class AttendanceService {
     );
 
     if (distance > site.radius) {
-      return 'Outside site boundary (${distance.toStringAsFixed(0)} m)';
+      throw Exception(
+          'Outside site boundary (${distance.toStringAsFixed(0)} m)');
     }
 
-    await repo.saveAttendance(
-      DateTime.now(),
-      position.latitude,
-      position.longitude,
+    await repo.insertWorkerAttendance(
+      workerId: workerId,
+      date: DateTime.now(),
+      status: status,
+      latitude: position.latitude,
+      longitude: position.longitude,
     );
-
-    return 'Attendance saved offline';
   }
 }
