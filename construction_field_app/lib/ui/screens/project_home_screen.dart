@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'dashboard_screen.dart';
 import 'attendance_screen.dart'; 
 import 'records_screen.dart';    
-import 'report_customization_screen.dart'; // Ensure this file exists
+import 'report_customization_screen.dart';
+import 'dpr_screen.dart';
+import 'material_screen.dart';
 
 class ProjectHomeScreen extends StatefulWidget {
   final String projectName;
@@ -14,7 +16,7 @@ class ProjectHomeScreen extends StatefulWidget {
 
 class _ProjectHomeScreenState extends State<ProjectHomeScreen> {
   int _selectedIndex = 0;
-  String selectedReportType = 'Summary Report'; // Default selection
+  String selectedReportType = 'Summary Report'; 
 
   late List<Widget> _screens;
 
@@ -23,8 +25,8 @@ class _ProjectHomeScreenState extends State<ProjectHomeScreen> {
     super.initState();
     _screens = [
       DashboardScreen(projectName: widget.projectName),
-      const Center(child: Text('Task Management Screen')),
-      const Center(child: Text('Material/Inventory Screen')),
+      const DPRScreen(),
+      const MaterialScreen(), // Updated from placeholder
       const AttendanceScreen(), 
       const RecordsScreen(),     
     ];
@@ -87,7 +89,6 @@ class _ProjectHomeScreenState extends State<ProjectHomeScreen> {
       isScrollControlled: true,
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
       builder: (context) {
-        // StatefulBuilder allows the bottom sheet UI to update when a type is selected
         return StatefulBuilder(
           builder: (BuildContext context, StateSetter setSheetState) {
             return Container(
@@ -100,14 +101,14 @@ class _ProjectHomeScreenState extends State<ProjectHomeScreen> {
                   const SizedBox(height: 20),
                   _reportTypeOption(
                     'Detailed Report', 
-                    'Shows day-wise logs—useful for detailed tracking.',
+                    'Shows day-wise logs—useful for detailed tracking and records.',
                     isSelected: selectedReportType == 'Detailed Report',
                     onTap: () => setSheetState(() => selectedReportType = 'Detailed Report'),
                   ),
                   const SizedBox(height: 12),
                   _reportTypeOption(
                     'Summary Report', 
-                    'Shows key summaries—great for quick updates.', 
+                    'Shows key summaries—great for quick updates and sharing.', 
                     isNew: true,
                     isSelected: selectedReportType == 'Summary Report',
                     onTap: () => setSheetState(() => selectedReportType = 'Summary Report'),
@@ -118,8 +119,7 @@ class _ProjectHomeScreenState extends State<ProjectHomeScreen> {
                     height: 50,
                     child: ElevatedButton(
                       onPressed: () {
-                        Navigator.pop(context); // Close sheet
-                        // Navigate to the customization screen
+                        Navigator.pop(context);
                         Navigator.push(
                           context,
                           MaterialPageRoute(
