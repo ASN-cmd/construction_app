@@ -4,7 +4,6 @@ import '../../services/attendance_service.dart';
 import '../../repositories/attendance_repository.dart';
 import 'profile_screen.dart';
 
-
 class AttendanceScreen extends StatefulWidget {
   const AttendanceScreen({super.key});
 
@@ -25,7 +24,6 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
     db = AppDatabase();
     final repo = AttendanceRepository(db);
     service = AttendanceService(repo);
-
   }
 
   /* -------- UI ACTIONS ONLY -------- */
@@ -73,13 +71,16 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-
-      appBar: AppBar(
-        title: const Text(
-          'Attendance',
-          style: TextStyle(color: Colors.white),
+    return ListView(
+      padding: const EdgeInsets.all(16),
+      children: [
+        ElevatedButton(
+          onPressed: handleSetSiteLocation,
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.lightBlue,
+            minimumSize: const Size(double.infinity, 50),
+          ),
+          child: const Text('Set Site Location'),
         ),
         backgroundColor: Colors.grey[800],
         actions: [
@@ -100,73 +101,60 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
         ],
       ),
 
-      body: ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
-          ElevatedButton(
-            onPressed: handleSetSiteLocation,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.lightBlue,
-              minimumSize: const Size(double.infinity, 50),
-            ),
-            child: const Text('Set Site Location'),
+        const SizedBox(height: 16),
+
+        ElevatedButton(
+          onPressed: isLoading ? null : handleMarkAttendance,
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.lightBlue,
+            minimumSize: const Size(double.infinity, 50),
           ),
+          child: isLoading
+              ? const CircularProgressIndicator(color: Colors.white)
+              : const Text('Mark Attendance'),
+        ),
 
-          const SizedBox(height: 16),
+        const SizedBox(height: 20),
 
-          ElevatedButton(
-            onPressed: isLoading ? null : handleMarkAttendance,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.lightBlue,
-              minimumSize: const Size(double.infinity, 50),
-            ),
-            child: isLoading
-                ? const CircularProgressIndicator(color: Colors.white)
-                : const Text('Mark Attendance'),
+        Text(
+          statusMessage,
+          style: const TextStyle(color: Colors.black87),
+        ),
+
+        const SizedBox(height: 24),
+        const Divider(),
+        const SizedBox(height: 12),
+
+        const Text(
+          'Configured Site (Geofence)',
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
           ),
+        ),
 
-          const SizedBox(height: 20),
+        const SizedBox(height: 8),
 
-          Text(
-            statusMessage,
-            style: const TextStyle(color: Colors.black87),
-          ),
-
-          const SizedBox(height: 24),
-          const Divider(),
-          const SizedBox(height: 12),
-
-          const Text(
-            'Configured Site (Geofence)',
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-
-          const SizedBox(height: 8),
-
-          FutureBuilder(
-            future: db.getSiteGeofence(),
-            builder: (context, snapshot) {
-              if (!snapshot.hasData || snapshot.data == null) {
-                return const Text(
-                  'Site not configured yet',
-                  style: TextStyle(color: Colors.red),
-                );
-              }
-
-              final site = snapshot.data!;
-              return Text(
-                'Latitude: ${site.latitude.toStringAsFixed(5)}\n'
-                'Longitude: ${site.longitude.toStringAsFixed(5)}\n'
-                'Radius: ${site.radius.toInt()} meters',
-                style: const TextStyle(color: Colors.black87),
+        FutureBuilder(
+          future: db.getSiteGeofence(),
+          builder: (context, snapshot) {
+            if (!snapshot.hasData || snapshot.data == null) {
+              return const Text(
+                'Site not configured yet',
+                style: TextStyle(color: Colors.red),
               );
-            },
-          ),
-        ],
-      ),
+            }
+
+            final site = snapshot.data!;
+            return Text(
+              'Latitude: ${site.latitude.toStringAsFixed(5)}\n'
+              'Longitude: ${site.longitude.toStringAsFixed(5)}\n'
+              'Radius: ${site.radius.toInt()} meters',
+              style: const TextStyle(color: Colors.black87),
+            );
+          },
+        ),
+      ],
     );
   }
 }

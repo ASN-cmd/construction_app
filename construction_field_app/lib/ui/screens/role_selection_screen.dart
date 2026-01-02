@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../repositories/auth_repository.dart';
 import '../../services/auth_service.dart';
-import 'main_scaffold.dart';
+import 'project_list_screen.dart';
 
 class RoleSelectionScreen extends StatelessWidget {
   const RoleSelectionScreen({super.key});
@@ -23,11 +23,7 @@ class RoleSelectionScreen extends StatelessWidget {
               title: 'Site Engineer',
               onTap: () async {
                 await service.saveRole('Site Engineer');
-                Navigator.pushAndRemoveUntil(
-                  context,
-                  MaterialPageRoute(builder: (_) => MainScaffold()),
-                  (_) => false,
-                );
+                _goToProjects(context);
               },
             ),
             RoleCard(
@@ -35,11 +31,7 @@ class RoleSelectionScreen extends StatelessWidget {
               title: 'Supervisor',
               onTap: () async {
                 await service.saveRole('Supervisor');
-                Navigator.pushAndRemoveUntil(
-                  context,
-                  MaterialPageRoute(builder: (_) => MainScaffold()),
-                  (_) => false,
-                );
+                _goToProjects(context);
               },
             ),
             RoleCard(
@@ -47,16 +39,20 @@ class RoleSelectionScreen extends StatelessWidget {
               title: 'Manager',
               onTap: () async {
                 await service.saveRole('Manager');
-                Navigator.pushAndRemoveUntil(
-                  context,
-                  MaterialPageRoute(builder: (_) => MainScaffold()),
-                  (_) => false,
-                );
+                _goToProjects(context);
               },
             ),
           ],
         ),
       ),
+    );
+  }
+
+  void _goToProjects(BuildContext context) {
+    Navigator.pushAndRemoveUntil(
+      context,
+      MaterialPageRoute(builder: (_) => ProjectListScreen()),
+      (_) => false,
     );
   }
 }

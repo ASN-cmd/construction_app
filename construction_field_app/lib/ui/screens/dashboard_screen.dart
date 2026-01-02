@@ -2,7 +2,12 @@ import 'package:flutter/material.dart';
 import 'profile_screen.dart';
 
 class DashboardScreen extends StatelessWidget {
-  const DashboardScreen({super.key});
+  final String projectName;
+
+  const DashboardScreen({
+    super.key,
+    required this.projectName,
+  });
 
   @override
   Widget build(BuildContext context) {
