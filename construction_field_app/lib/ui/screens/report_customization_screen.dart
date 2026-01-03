@@ -30,7 +30,7 @@ class _ReportCustomizationScreenState extends State<ReportCustomizationScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Text('My Organisation', style: TextStyle(color: Colors.grey, fontSize: 12)),
-            const Text('hone', style: TextStyle(color: Colors.black, fontSize: 16, fontWeight: FontWeight.bold)),
+            const Text('home', style: TextStyle(color: Colors.black, fontSize: 16, fontWeight: FontWeight.bold)),
           ],
         ),
         actions: [

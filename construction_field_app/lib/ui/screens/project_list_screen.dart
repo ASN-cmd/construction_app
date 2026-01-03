@@ -7,7 +7,7 @@ class ProjectListScreen extends StatelessWidget {
 
   final List<Project> projects = [
     Project(
-      name: 'hone', // Renamed to match your Powerplay screenshot
+      name: 'home', // Renamed to match your Powerplay screenshot
       startDate: DateTime(2025, 1, 1),
       endDate: DateTime(2025, 6, 30),
       isActive: true,
